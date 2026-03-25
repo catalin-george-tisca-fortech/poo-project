@@ -1,28 +1,25 @@
 #include "GameEngine.hpp"
 
+#include "../game/PlayerRectangle.hpp"
+#include "../game/RenderStyle.hpp"
+#include "../game/Size2D.hpp"
+#include "../game/Vector2.hpp"
+
 #include <chrono>
+#include <ostream>
 
 #include <SDL3/SDL.h>
 
 namespace escape::app {
-    struct Transform {
-        float x {0.0F};
-        float y {0.0F};
-    };
-
-    struct RectangleShape {
-        float width {0.0F};
-        float height {0.0F};
-        Color color {};
-    };
-
     struct MoveSpeed {
+        explicit MoveSpeed(float units_per_second_value)
+            : units_per_second(units_per_second_value) {}
+
         float units_per_second {0.0F};
     };
 
-
-    GameEngine::GameEngine()
-        : window_(WindowConfig {.title = "escape engine", .width = 1280, .height = 720}) {}
+    GameEngine::GameEngine(WindowConfig config)
+        : window_(std::move(config)) {}
 
     void GameEngine::run() {
         bootstrap_demo_scene();
@@ -44,20 +41,20 @@ namespace escape::app {
     void GameEngine::bootstrap_demo_scene() {
         const auto entity = registry_.create_entity();
 
-        registry_.emplace<Transform>(entity, Transform {.x = 200.0F, .y = 160.0F});
-        registry_.emplace<RectangleShape>(entity, RectangleShape {
-            .width = 140.0F,
-            .height = 100.0F,
-            .color = Color {.r = 247, .g = 120, .b = 37, .a = 255},
-        });
-        registry_.emplace<MoveSpeed>(entity, MoveSpeed {.units_per_second = 320.0F});
+        registry_.emplace<game::PlayerRectangle>(
+            entity,
+            "player",
+            game::Vector2 {200.0F, 160.0F},
+            game::Size2D {140.0F, 100.0F},
+            game::RenderStyle {Color {.r = 247, .g = 120, .b = 37, .a = 255}});
+        registry_.emplace<MoveSpeed>(entity, 320.0F);
     }
 
     void GameEngine::handle_input(float delta_time_seconds) {
         SDL_PumpEvents();
         const bool* keyboard_state = SDL_GetKeyboardState(nullptr);
 
-        registry_.each<Transform, RectangleShape, MoveSpeed>([&](ecs::Entity, Transform& transform, const RectangleShape& shape, const MoveSpeed& speed) {
+        registry_.each<game::PlayerRectangle, MoveSpeed>([&](ecs::Entity, game::PlayerRectangle& player, const MoveSpeed& speed) {
             auto horizontal_axis = 0.0F;
             auto vertical_axis = 0.0F;
 
@@ -74,21 +71,11 @@ namespace escape::app {
                 vertical_axis += 1.0F;
             }
 
-            transform.x += horizontal_axis * speed.units_per_second * delta_time_seconds;
-            transform.y += vertical_axis * speed.units_per_second * delta_time_seconds;
-
-            if (transform.x < 0.0F) {
-                transform.x = 0.0F;
-            }
-            if (transform.y < 0.0F) {
-                transform.y = 0.0F;
-            }
-            if (transform.x + shape.width > static_cast<float>(window_.width())) {
-                transform.x = static_cast<float>(window_.width()) - shape.width;
-            }
-            if (transform.y + shape.height > static_cast<float>(window_.height())) {
-                transform.y = static_cast<float>(window_.height()) - shape.height;
-            }
+            player.move_with_direction(horizontal_axis, vertical_axis, speed.units_per_second, delta_time_seconds);
+            player.clamp_to_bounds(game::Size2D {
+                static_cast<float>(window_.width()),
+                static_cast<float>(window_.height()),
+            });
         });
     }
 
@@ -99,18 +86,15 @@ namespace escape::app {
     void GameEngine::render() {
         window_.clear(Color {.r = 18, .g = 18, .b = 24, .a = 255});
 
-        registry_.each<Transform, RectangleShape>([&](ecs::Entity, const Transform& transform, const RectangleShape& shape) {
-            window_.draw_filled_rect(
-                Rectangle {
-                    .x = transform.x,
-                    .y = transform.y,
-                    .width = shape.width,
-                    .height = shape.height,
-                },
-                shape.color);
+        registry_.each<game::PlayerRectangle>([&](ecs::Entity, const game::PlayerRectangle& player) {
+            window_.draw_filled_rect(player.to_window_rectangle(), player.style().fill_color());
         });
 
         window_.present();
     }
 
-} 
+    auto operator<<(std::ostream& stream, const GameEngine& game_engine) -> std::ostream& {
+        stream << "GameEngine{window=" << game_engine.window_ << "}";
+        return stream;
+    }
+}

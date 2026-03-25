@@ -1,5 +1,6 @@
 #include "Window.hpp"
 
+#include <ostream>
 #include <stdexcept>
 #include <utility>
 
@@ -99,4 +100,33 @@ namespace escape::app {
         }
     }
 
+    auto operator<<(std::ostream& stream, const WindowConfig& config) -> std::ostream& {
+        stream << "WindowConfig{title=" << config.title
+            << ", width=" << config.width
+            << ", height=" << config.height << "}";
+        return stream;
+    }
+
+    auto operator<<(std::ostream& stream, const Color& color) -> std::ostream& {
+        stream << "Color{r=" << static_cast<int>(color.r)
+            << ", g=" << static_cast<int>(color.g)
+            << ", b=" << static_cast<int>(color.b)
+            << ", a=" << static_cast<int>(color.a) << "}";
+        return stream;
+    }
+
+    auto operator<<(std::ostream& stream, const Rectangle& rectangle) -> std::ostream& {
+        stream << "Rectangle{x=" << rectangle.x
+            << ", y=" << rectangle.y
+            << ", width=" << rectangle.width
+            << ", height=" << rectangle.height << "}";
+        return stream;
+    }
+
+    auto operator<<(std::ostream& stream, const Window& window) -> std::ostream& {
+        stream << "Window{is_open=" << (window.is_open() ? "true" : "false")
+            << ", width=" << window.width()
+            << ", height=" << window.height() << "}";
+        return stream;
+    }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iosfwd>
 #include <memory>
 #include <string>
 
@@ -69,4 +70,9 @@ namespace escape::app {
         bool is_open_ {true};
         bool sdl_initialized_ {false};
     };
-} 
+
+    auto operator<<(std::ostream& stream, const WindowConfig& config) -> std::ostream&;
+    auto operator<<(std::ostream& stream, const Color& color) -> std::ostream&;
+    auto operator<<(std::ostream& stream, const Rectangle& rectangle) -> std::ostream&;
+    auto operator<<(std::ostream& stream, const Window& window) -> std::ostream&;
+}

@@ -23,6 +23,10 @@ add_executable(escape
     src/main.cpp
     src/app/GameEngine.cpp
     src/app/Window.cpp
+    src/game/Vector2.cpp
+    src/game/Size2D.cpp
+    src/game/RenderStyle.cpp
+    src/game/PlayerRectangle.cpp
 )
 
 target_include_directories(escape
