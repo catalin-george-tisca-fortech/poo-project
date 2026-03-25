@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+struct SDL_Renderer;
 struct SDL_Window;
 
 namespace escape::app {
@@ -10,6 +11,20 @@ namespace escape::app {
         std::string title {"escape"};
         int width {1280};
         int height {720};
+    };
+
+    struct Color {
+        unsigned char r {0};
+        unsigned char g {0};
+        unsigned char b {0};
+        unsigned char a {255};
+    };
+
+    struct Rectangle {
+        float x {0.0F};
+        float y {0.0F};
+        float width {0.0F};
+        float height {0.0F};
     };
 
     class Window {
@@ -23,13 +38,20 @@ namespace escape::app {
         auto operator=(Window&&) -> Window& = delete;
 
         void process_events();
+        void clear(Color color);
+        void draw_filled_rect(Rectangle rectangle, Color color);
+        void present();
 
         auto is_open() const noexcept -> bool {
             return is_open_;
         }
 
-        auto native_handle() const noexcept -> SDL_Window* {
-            return window_.get();
+        auto width() const noexcept -> int {
+            return config_.width;
+        }
+
+        auto height() const noexcept -> int {
+            return config_.height;
         }
 
     private:
@@ -37,8 +59,13 @@ namespace escape::app {
             void operator()(SDL_Window* window) const noexcept;
         };
 
+        struct RendererDeleter {
+            void operator()(SDL_Renderer* renderer) const noexcept;
+        };
+
         WindowConfig config_ {};
         std::unique_ptr<SDL_Window, WindowDeleter> window_ {nullptr};
+        std::unique_ptr<SDL_Renderer, RendererDeleter> renderer_ {nullptr};
         bool is_open_ {true};
         bool sdl_initialized_ {false};
     };

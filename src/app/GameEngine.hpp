@@ -26,9 +26,11 @@ namespace escape::app {
 
     private:
         void bootstrap_demo_scene();
-        void update();
+        void handle_input(float delta_time_seconds);
+        void update(float delta_time_seconds);
+        void render();
 
         Window window_;
         ecs::Registry registry_ {};
     };
-}  
+}
