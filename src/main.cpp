@@ -1,6 +1,7 @@
-#include <iostream>
+#include "app/GameEngine.hpp"
 
 int main() {
-    std::cout << "Hello, escape!\n";
+    auto engine = escape::app::GameEngine {};
+    engine.run();
     return 0;
 }

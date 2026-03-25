@@ -8,4 +8,10 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_executable(escape
     src/main.cpp
+    src/app/GameEngine.cpp
+)
+
+target_include_directories(escape
+    PRIVATE
+        src
 )
