@@ -1,31 +1,34 @@
 #pragma once
 
 #include "../ecs/Registry.hpp"
+#include "Window.hpp"
 
 namespace escape::app {
+    class GameEngine {
+    public:
+        GameEngine();
+        ~GameEngine() = default;
 
-class GameEngine {
-public:
-    GameEngine() = default;
-    ~GameEngine() = default;
+        GameEngine(const GameEngine&) = delete;
+        GameEngine(GameEngine&&) = delete;
+        auto operator=(const GameEngine&) -> GameEngine& = delete;
+        auto operator=(GameEngine&&) -> GameEngine& = delete;
 
-    GameEngine(const GameEngine&) = delete;
-    GameEngine(GameEngine&&) noexcept = default;
-    auto operator=(const GameEngine&) -> GameEngine& = delete;
-    auto operator=(GameEngine&&) noexcept -> GameEngine& = default;
+        void run();
 
-    void run();
+        auto registry() noexcept -> ecs::Registry& {
+            return registry_;
+        }
 
-    auto registry() noexcept -> ecs::Registry& {
-        return registry_;
-    }
+        auto registry() const noexcept -> const ecs::Registry& {
+            return registry_;
+        }
 
-    auto registry() const noexcept -> const ecs::Registry& {
-        return registry_;
-    }
+    private:
+        void bootstrap_demo_scene();
+        void update();
 
-private:
-    ecs::Registry registry_ {};
-};
-
-}  // namespace escape::app
+        Window window_;
+        ecs::Registry registry_ {};
+    };
+}  
